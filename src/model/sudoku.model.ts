@@ -51,7 +51,7 @@ export class Sudoku {
         const candidates = this._get_candidates_map(blank_board);
 
         // iterate over shuffled list of squares
-        const shuffled_squares = this._shuffle(this.squares);
+        const shuffled_squares = this._patterned_shuffle(this.squares);
         for (const square of shuffled_squares) {
             // if an assignment of a random chioce causes a contradictoin, give up and try again
             const rand_candidate_idx = this._rand_range(candidates[square].length);
@@ -634,7 +634,38 @@ export class Sudoku {
 
     /**
      * Return a shuffled version of `seq`.
-     * FIXME: @Jan: implement shuffle version with pattern for field shuffle
+     * The shuffle will be applied symmetrically on the first and second half of the given array.
+     *
+     * @param seq
+     */
+    private _patterned_shuffle(seq: string[]): string[] {
+        seq = JSON.parse(JSON.stringify(seq));
+
+        // if seq has odd length, take center item out
+        let center = undefined;
+        if (seq.length % 2 !== 0) {
+            [center] = seq.splice(Math.floor(seq.length / 2), 1);
+        }
+
+        // shuffle by symmetric pattern
+        const shuffled = []
+        for (let i = seq.length / 2; i > 0; --i) {
+            const rnd = Math.floor(Math.random() * i);
+            const [second_half_item] = seq.splice(seq.length - 1 - rnd, 1);
+            const [first_half_item] = seq.splice(rnd, 1);
+            shuffled.push(first_half_item, second_half_item);
+        }
+
+        // re-insert center item
+        if (center) {
+            shuffled.splice(shuffled.length / 2, 0, center);
+        }
+
+        return shuffled;
+    }
+
+    /**
+     * Return a shuffled version of `seq`.
      *
      * @param seq
      */
